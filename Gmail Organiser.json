@@ -1,0 +1,788 @@
+{
+  "name": "Gmail Organiser",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Organize your Gmail inbox automatically by sender  \nBy Tinashe Kwande\n\n## How it works\n\nThis workflow automatically organizes your Gmail inbox by applying sender-based labels to emails.\n\nOn a scheduled interval, the workflow checks your inbox for the most recent email that has already been marked as read. This ensures unread emails are never modified before you review them.\n\nOnce a read email is found, the workflow extracts the sender’s name and retrieves all existing Gmail labels. It then checks whether a user-created label already exists with the same name as the sender.\n\n- If a matching label exists, the workflow applies that label to the email.\n- If no matching label exists, a new label is created using the sender’s name and then applied to the email.\n\nAdditional checks ensure that only user-created labels are used and that the correct label is applied to the correct message. After a label is successfully applied, the email is removed from the Inbox, keeping your inbox clean while preserving access through labels.\n\nThis process runs continuously and safely, ensuring emails from the same sender are always grouped together.\n\n## Setup steps\n\n1. Import this workflow into your n8n instance.\n2. Connect your Gmail account credentials to all Gmail nodes.\n3. Adjust the Schedule Trigger to your preferred interval.\n4. Mark emails as read to allow them to be processed.\n5. Activate the workflow.\n",
+        "height": 688,
+        "width": 800
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2448,
+        144
+      ],
+      "id": "74fc9aee-e414-40e8-9b87-9f6eaa97f8ba",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## | Getting the latest read email and checking existing labels\n\nThis section retrieves the most recent email that has been marked as read, fetches all existing Gmail labels, and loops through them to find a label that matches the email sender.\n ",
+        "height": 688,
+        "width": 1296,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1648,
+        144
+      ],
+      "id": "5d76b109-b5ad-40c6-8e36-0603b922949f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## | Handling emails without an existing sender label\n\nIf no matching label is found after looping through all existing labels, the workflow safely creates a new label using the sender’s name and prepares it for application.\n\n",
+        "height": 336,
+        "width": 2544,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        144
+      ],
+      "id": "9890c77a-3604-4881-8e1d-c80720b273c3",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## | Handling emails with an existing sender label\n\nIf a matching user-created label already exists, the workflow verifies the match and applies the label to the email.\n",
+        "height": 352,
+        "width": 2544,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        480
+      ],
+      "id": "6770ab90-ba1d-4c9b-a1db-0757ba8b002f",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1552,
+        352
+      ],
+      "id": "e2ebb4ce-38ed-4964-a331-3a3b9eef587d",
+      "name": "Run inbox scan on schedule"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 1,
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ],
+          "readStatus": "read"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1248,
+        352
+      ],
+      "id": "2e040fb4-2190-41d6-bf73-7374693706ef",
+      "name": "Get most recent read inbox email",
+      "webhookId": "1640e688-220b-4aeb-a536-27f8b9faa8d9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7N8O2HxnIfQPl1hQ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "73a8e61f-5622-4d61-81dd-91ebb723768c",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1008,
+        352
+      ],
+      "id": "e45bae3d-12e7-4d0f-b4d2-463ffdb43663",
+      "name": "Extract message ID"
+    },
+    {
+      "parameters": {
+        "resource": "label",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -848,
+        352
+      ],
+      "id": "34ee9dc9-9792-4fca-b348-109de57f961b",
+      "name": "Fetch all Gmail labels",
+      "webhookId": "b8ac1bac-4eb5-45d3-a8cb-33b0c58b5c13",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7N8O2HxnIfQPl1hQ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -544,
+        352
+      ],
+      "id": "13fbcde0-5a45-43e6-9f0a-7a01fd558c03",
+      "name": "Loop through existing labels"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $items(\"Get most recent read inbox email\").map(item => {\n  const sender = item.json.From ? item.json.From.split(\" <\")[0].toLowerCase() : null;\n  const labels = $items(\"Fetch all Gmail labels\").map(l => l.json.name.toLowerCase());\n  const labelExists = sender ? labels.includes(sender) : false;\n\n  return {\n    json: { senderName: sender, labelExists },\n    pairedItem: item\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        272
+      ],
+      "id": "fd6c50e6-b5ca-48d2-abab-f65837b4ef0d",
+      "name": "Check if sender label exists"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "90257ba4-9b8c-41d0-b418-720dceab72c6",
+              "leftValue": "={{ $items(\"Fetch all Gmail labels\").map(l => l.json.name.toLowerCase()) }}\n",
+              "rightValue": "={{ $('Get most recent read inbox email').item.json.From.split(\" <\")[0].toLowerCase() }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "b7992e9f-8719-44b0-a1fa-e5ef58a55751",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "user",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -160,
+        592
+      ],
+      "id": "ced3f85a-3969-4829-8865-8ecbabe5740a",
+      "name": "Sender label match found"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0d970627-ce67-466d-b75a-e7975a2e1a84",
+              "leftValue": "={{ $json.labelExists }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        96,
+        240
+      ],
+      "id": "c728a646-92d5-40e2-ad7f-9ef0f4cd147a",
+      "name": "Final label existence check"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "25620063-76ea-49f4-829e-2cb89d9dbaff",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "user",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "7f9446c5-0840-4c72-8eff-d04fa3093026",
+              "leftValue": "={{ $('Fetch all Gmail labels').item.json.type }}",
+              "rightValue": "user",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "e887857a-dc1b-4807-87b1-b73201860acc",
+              "leftValue": "={{ $('Get most recent read inbox email').item.json.From.split(\" <\")[0].toLowerCase() }}",
+              "rightValue": "={{ $json.name }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        576
+      ],
+      "id": "44c15280-2c90-4b7b-9e85-9ea490d58b2b",
+      "name": "Confirm label matches sender",
+      "notesInFlow": false,
+      "notes": "This ensures that the current label is a user-defined label and it also makes sure that the current message is assigned to the correct label"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "25620063-76ea-49f4-829e-2cb89d9dbaff",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "user",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        256
+      ],
+      "id": "695b45a3-ef83-4456-84d6-198e250e47d1",
+      "name": "Verify user-created label"
+    },
+    {
+      "parameters": {
+        "resource": "label",
+        "operation": "create",
+        "name": "={{ $json.senderName }}",
+        "options": {}
+      },
+      "name": "Create new sender label",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        528,
+        256
+      ],
+      "id": "5c9c32bc-ec5a-479d-a355-cf261ce745e5",
+      "webhookId": "0c0558e4-63f4-431f-8afa-5d3797c19968",
+      "executeOnce": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7N8O2HxnIfQPl1hQ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "label",
+        "operation": "get",
+        "labelId": "={{ $('Create new sender label').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        768,
+        256
+      ],
+      "id": "838a342c-8829-438d-a4ed-7cf9711894f3",
+      "name": "Retrieve new label details",
+      "webhookId": "70fb99a5-7f76-4bc6-9137-85c015b18e65",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7N8O2HxnIfQPl1hQ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "labelId",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "messageId",
+              "value": "={{ $('Get most recent read inbox email').item.json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Prepare new label for message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        976,
+        256
+      ],
+      "id": "80b406aa-f76f-47e3-b1b2-38fd0c237d7b"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "={{ $('Fetch all Gmail labels').item.json.id }}",
+              "value": "={{ $('Fetch all Gmail labels').item.json.name }}"
+            },
+            {
+              "name": "={{ $('Get most recent read inbox email').item.json.id }}",
+              "value": "={{ $('Get most recent read inbox email').item.json.From.split(\" <\")[0] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Prepare existing label for message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        256,
+        576
+      ],
+      "id": "058a20c8-9234-4497-a644-3b50d5cefd7a"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $items(\"Extract message ID\")[0].json.id }}",
+        "labelIds": "={{ $('Fetch all Gmail labels').item.json.id }}"
+      },
+      "name": "Apply existing label to email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        560
+      ],
+      "id": "91833c23-84e5-4a74-a9e0-081e4c41b6ae",
+      "webhookId": "117eed22-b8a4-4209-9507-b93994dfbb6a",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7N8O2HxnIfQPl1hQ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $items(\"Extract message ID\")[0].json.id }}",
+        "labelIds": "={{ $json.id }}"
+      },
+      "name": "Apply new label to email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        144
+      ],
+      "id": "45182bed-7665-47ce-a49d-bbcfc1fa0201",
+      "webhookId": "117eed22-b8a4-4209-9507-b93994dfbb6a",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7N8O2HxnIfQPl1hQ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $items(\"Extract message ID\")[0].json.id }}",
+        "labelIds": [
+          "INBOX"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1760,
+        144
+      ],
+      "id": "8dcdf05f-3346-404f-afa5-995905d0415a",
+      "name": "Remove email from inbox (new label)",
+      "webhookId": "33d41fb2-8952-4b1b-be44-0b2b191e1a10",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7N8O2HxnIfQPl1hQ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $items(\"Extract message ID\")[0].json.id }}",
+        "labelIds": [
+          "INBOX"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1792,
+        560
+      ],
+      "id": "ad2b994b-9370-45c8-b801-3ca60d4dc822",
+      "name": "Remove email from inbox (existing label)",
+      "webhookId": "48ac48a4-90cf-4641-84b1-6de479f6c21c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7N8O2HxnIfQPl1hQ",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run inbox scan on schedule": {
+      "main": [
+        [
+          {
+            "node": "Get most recent read inbox email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get most recent read inbox email": {
+      "main": [
+        [
+          {
+            "node": "Extract message ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract message ID": {
+      "main": [
+        [
+          {
+            "node": "Fetch all Gmail labels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch all Gmail labels": {
+      "main": [
+        [
+          {
+            "node": "Loop through existing labels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop through existing labels": {
+      "main": [
+        [
+          {
+            "node": "Check if sender label exists",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sender label match found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if sender label exists": {
+      "main": [
+        [
+          {
+            "node": "Final label existence check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sender label match found": {
+      "main": [
+        [
+          {
+            "node": "Prepare existing label for message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop through existing labels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final label existence check": {
+      "main": [
+        [
+          {
+            "node": "Prepare existing label for message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create new sender label",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirm label matches sender": {
+      "main": [
+        [
+          {
+            "node": "Apply existing label to email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop through existing labels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify user-created label": {
+      "main": [
+        [
+          {
+            "node": "Apply new label to email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop through existing labels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create new sender label": {
+      "main": [
+        [
+          {
+            "node": "Retrieve new label details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve new label details": {
+      "main": [
+        [
+          {
+            "node": "Prepare new label for message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare new label for message": {
+      "main": [
+        [
+          {
+            "node": "Verify user-created label",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare existing label for message": {
+      "main": [
+        [
+          {
+            "node": "Confirm label matches sender",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply existing label to email": {
+      "main": [
+        [
+          {
+            "node": "Remove email from inbox (existing label)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply new label to email": {
+      "main": [
+        [
+          {
+            "node": "Remove email from inbox (new label)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove email from inbox (new label)": {
+      "main": [
+        [
+          {
+            "node": "Get most recent read inbox email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove email from inbox (existing label)": {
+      "main": [
+        [
+          {
+            "node": "Get most recent read inbox email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c88e116a-9e13-4071-bae4-83587468f839",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e1597428c1657f6266a1b12d594be62c8241c6a0465f71bef38bf25e1c8b4c33"
+  },
+  "id": "0AfIemtAxp7Mbbfn",
+  "tags": []
+}
